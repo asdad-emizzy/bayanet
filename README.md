@@ -26,6 +26,31 @@ Operator notes
 
 - The project is designed to deploy on Vercel for the frontend and serverless API routes, with a managed Postgres (or Supabase) and Redis. For production, configure storage (S3) and provider credentials via environment variables and secrets management.
 - Add application-level monitoring (Sentry) and an audit/event sink early; payment and voucher operations should be fully auditable.
+ 
+## Project plan
+
+This project follows the Bayanet execution plan (brand + product). Key points:
+
+- Brand positioning: "Powering Communities. Rewarding Participation." — a Philippines-first, community-powered platform connecting LGUs, brands, students, and citizens.
+- Target stakeholders and value:
+   - LGUs: citizen engagement, digital surveys, transparency dashboards.
+   - Brands: hyperlocal campaigns, authentic UGC, micro-influencer activations.
+   - Students & Youth: paid digital tasks, portfolio-building campaigns, learning/certification opportunities.
+   - Netizens: surveys, events, voucher rewards (GCash/load), reputation points.
+- Brand architecture: distinct surfaces for LGU, Brands, Campus (students), and Rewards.
+- Messaging & tone: trustworthy, inclusive, empowering; prefer plain language and Taglish-friendly phrasing where appropriate.
+- Visual direction: deep blue (trust), gold/yellow (rewards), accessible sans-serif typography, mobile-first design.
+- Ethical & trust principles: explicit consent, no selling of personal data, anonymized insights, opt-in campaigns, transparent rewards.
+
+Short-term execution steps:
+
+1. Logo & brand kit design
+2. Landing page (LGU & Brand-focused)
+3. MVP product build (Next.js + Prisma) — Phase 1: core data models & APIs
+4. Pilot with 1 LGU + 1 brand
+5. Rewards & payout integration
+
+For full details and messaging examples, see `.github/instructions/project_plan.md`.
 # Bayanet — Next.js Starter
 
 > Note: The repository history on `origin/main` was recently rewritten to remove accidentally committed large files. See `CONTRIBUTING.md` for recovery steps if you have an older clone.
