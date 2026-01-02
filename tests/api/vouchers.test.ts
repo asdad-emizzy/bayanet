@@ -4,6 +4,7 @@ import prisma from '../../lib/prisma'
 import handler from '../../pages/api/vouchers'
 
 beforeAll(async () => {
+  await prisma.order.deleteMany()
   await prisma.voucher.deleteMany()
 })
 

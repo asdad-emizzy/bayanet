@@ -4,7 +4,8 @@ import prisma from '../../lib/prisma'
 import handler from '../../pages/api/users'
 
 beforeAll(async () => {
-  // Ensure DB is clean
+  // Ensure DB is clean: delete orders before users to avoid FK constraints
+  await prisma.order.deleteMany()
   await prisma.user.deleteMany()
 })
 

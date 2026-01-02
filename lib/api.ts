@@ -6,7 +6,7 @@ export function withApi(handler: any) {
       await handler(req, res)
     } catch (err: any) {
       if (err instanceof ZodError) {
-        return res.status(422).json({ error: 'validation_error', issues: err.errors })
+        return res.status(422).json({ error: 'validation_error', issues: err.issues })
       }
       console.error('api error', err)
       return res.status(500).json({ error: 'internal_error' })
