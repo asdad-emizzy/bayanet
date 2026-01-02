@@ -1,5 +1,4 @@
 import { execSync } from 'node:child_process'
-import fs from 'node:fs'
 import prisma from '../lib/prisma'
 
 const DB_PATHS = ['prisma/dev.db', 'prisma/prisma/dev.db']
@@ -18,16 +17,9 @@ export async function resetTestDb(deleteOrder: string[] = ['order', 'voucher', '
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       // Ensure prisma is disconnected before we replace the DB file
-      try {
-        await prisma.$disconnect()
-      } catch (err) {
-        // Not fatal; log for visibility
-        // eslint-disable-next-line no-console
-        console.debug('prisma disconnect during resetTestDb:', String(err))
-      }
-      // remove any existing DB files (helper reduces cognitive complexity)
-      removeExistingDbFiles()
+      // Ensure schema exists before connecting
       execSync('npx prisma db push', { stdio: 'ignore' })
+      // Ensure prisma client is connected
       await prisma.$connect()
 
       // Delete models in requested order to avoid FK constraint errors. Be resilient
@@ -60,16 +52,3 @@ export async function resetTestDb(deleteOrder: string[] = ['order', 'voucher', '
 }
 
 export default resetTestDb
-
-function removeExistingDbFiles() {
-  for (const p of DB_PATHS) {
-    if (fs.existsSync(p)) {
-      try {
-        fs.unlinkSync(p)
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn('failed to unlink', p, String(err))
-      }
-    }
-  }
-}
