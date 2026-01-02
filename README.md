@@ -68,50 +68,17 @@ Architecture
 
 High-level architecture for the Bayanet MVP (pilot). See `docs/architecture.md` for full details.
 
-```mermaid
-flowchart LR
-   %% Linear ordering left-to-right
-   A[Mobile Web / PWA / Mobile Browser]
-   B[Next.js (Vercel) - Frontend]
-   C[Next.js API Routes (Serverless)]
-
-   %% Platform services (grouped but positioned after API)
-   D[(Postgres - Managed DB)]
-   E[(Redis - Rate limiting & sessions)]
-   F[(Object Store - S3) for UGC]
-   G[Auth Service (OTP provider / Twilio)]
-   H[Voucher Provider API]
-   I[GCash / Payments Gateway (partner)]
-
-   J[Analytics / Events]
-   K[Analytics Store (BigQuery / Supabase / Warehouse)]
-   L[Monitoring (Sentry/Datadog)]
-
-   M[Admin UI / Ops Dashboard]
-   N[Manual Review Queue]
-
-   O[LGU Systems / Facebook Pages / SMS Gateways]
-   P[Brand Systems]
-
-   %% Primary linear connections
-   A -->|HTTP| B --> C
-
-   %% Platform services fed by API
-   C --> D & C --> E & C --> F & C --> G & C --> H & C --> I
-
-   %% Analytics comes after platform events
-   C --> J
-   J --> K
-   J --> L
-
-   %% Ops follows analytics; admin interacts with API
-   J --> M --> N
-   M -->|Admin API| C
-
-   %% External integrations
-   O -->|Integration| C
-   P -->|Integration| C
-```
+> **Architecture (overview)**
+>
+> - **Client** — Mobile Web / PWA / Mobile Browser (user-facing)
+> - **Frontend** — Next.js (Vercel) serving pages and UI
+> - **API** — Next.js API Routes (serverless) handling business logic
+> - **Platform services** — Postgres (managed DB), Redis (sessions & rate-limiting), S3/object store for UGC, Auth service (OTP/Twilio), Voucher provider, Payments gateway
+> - **Analytics** — Events pipeline → Analytics store (BigQuery/Supabase) and Monitoring (Sentry/Datadog)
+> - **Ops** — Admin UI / Ops dashboard and Manual Review Queue for human workflows
+> - **External** — Integrations with LGU systems, Facebook Pages, SMS Gateways, Brand partner systems
+>
+> For a detailed diagram and architecture notes, see `docs/architecture.md`.
 
 Link: `docs/architecture.md`
 
