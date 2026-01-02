@@ -69,33 +69,56 @@ Architecture
 High-level architecture for the Bayanet MVP (pilot). See `docs/architecture.md` for full details.
 
 ```mermaid
-flowchart TD
-   subgraph Client
-      A[Mobile Web / PWA / Mobile Browser] -->|HTTP| B[Next.js (Vercel) - Frontend]
-      A -->|HTTP| C[Next.js API Routes (Serverless)]
+flowchart LR
+   %% Swimlane-style layout using subgraphs as lanes
+   subgraph Client [Client]
+      direction TB
+      A[Mobile Web / PWA / Mobile Browser]
    end
 
-   subgraph Platform
-      C --> D[(Postgres - Managed DB)]
-      C --> E[(Redis - Rate limiting & sessions)]
-      C --> F[(Object Store - S3) for UGC]
-      C --> G[Auth Service (OTP provider / Twilio)]
-      C --> H[Voucher Provider API]
-      C --> I[GCash / Payments Gateway (partner)]
-      C --> J[Analytics / Events]
-      J --> K[Analytics Store (BigQuery / Supabase / Warehouse)]
-      J --> L[Monitoring (Sentry/Datadog)]
+   subgraph Platform [Platform]
+      direction TB
+      B[Next.js (Vercel) - Frontend]
+      C[Next.js API Routes (Serverless)]
+      D[(Postgres - Managed DB)]
+      E[(Redis - Rate limiting & sessions)]
+      F[(Object Store - S3) for UGC]
+      G[Auth Service (OTP provider / Twilio)]
+      H[Voucher Provider API]
+      I[GCash / Payments Gateway (partner)]
+      J[Analytics / Events]
+      K[Analytics Store (BigQuery / Supabase / Warehouse)]
+      L[Monitoring (Sentry/Datadog)]
    end
 
-   subgraph Ops
-      M[Admin UI / Ops Dashboard] -->|Admin API| C
-      N[Manual Review Queue] -->|review| M
+   subgraph Ops [Ops]
+      direction TB
+      M[Admin UI / Ops Dashboard]
+      N[Manual Review Queue]
    end
 
-   subgraph External
-      O[LGU Systems / Facebook Pages / SMS Gateways] -->|Integration| C
-      P[Brand Systems] -->|Integration| C
+   subgraph External [External]
+      direction TB
+      O[LGU Systems / Facebook Pages / SMS Gateways]
+      P[Brand Systems]
    end
+
+   %% Connections
+   A -->|HTTP| B
+   A -->|HTTP| C
+   C --> D
+   C --> E
+   C --> F
+   C --> G
+   C --> H
+   C --> I
+   C --> J
+   J --> K
+   J --> L
+   M -->|Admin API| C
+   N -->|review| M
+   O -->|Integration| C
+   P -->|Integration| C
 ```
 
 Link: `docs/architecture.md`
