@@ -1,3 +1,31 @@
+# Bayanet
+
+Project scaffolded with Next.js + TypeScript + Tailwind CSS.
+## About Bayanet
+
+Bayanet is a lightweight platform for issuing, selling, and redeeming digital vouchers and mobile payments targeted at fast, reliable local commerce workflows. It's intended as a developer-first reference implementation and minimal production-ready starter for services that need:
+
+- Voucher issuance and redemption flows
+- Payment integration with partners (mockable for local dev)
+- Simple user accounts and order management
+- Admin/ops tooling for manual review and reconciliation
+
+Primary goals:
+
+- Provide a small, well-documented codebase that demonstrates best-practice patterns for building voucher/payment services on top of Next.js + TypeScript.
+- Make it easy to swap out provider integrations (payment gateway, SMS/OTP provider, object storage) via adapters and mocks for local development and CI.
+- Ship a safe default architecture: Postgres (via Prisma) for primary data, Redis for sessions/rate-limiting, and S3-compatible object storage for user content.
+
+Developer notes
+
+- Repo contains a phased TODO plan under the project root; Phase 1 focuses on Prisma+core API endpoints (users, vouchers, orders).
+- A GitHub Actions job blocks files >5MB; use Git LFS for large binaries and follow `CONTRIBUTING.md` if you need to recover after history changes.
+- Use local environment variables stored in a `.env.local` file for development (see `.env.example` if present). Avoid committing secrets.
+
+Operator notes
+
+- The project is designed to deploy on Vercel for the frontend and serverless API routes, with a managed Postgres (or Supabase) and Redis. For production, configure storage (S3) and provider credentials via environment variables and secrets management.
+- Add application-level monitoring (Sentry) and an audit/event sink early; payment and voucher operations should be fully auditable.
 # Bayanet — Next.js Starter
 
 > Note: The repository history on `origin/main` was recently rewritten to remove accidentally committed large files. See `CONTRIBUTING.md` for recovery steps if you have an older clone.
