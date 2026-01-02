@@ -1,14 +1,63 @@
-name: CI
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow
+name: CI (expanded)
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
   pull_request:
-    branches: [ main, master ]
+    branches: [main]
 
 jobs:
-  build:
+  test:
+    name: Run tests (sqlite)
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm ci
+      - name: Ensure Prisma schema (sqlite) and generate client
+        run: npx prisma db push --accept-data-loss
+      - name: Run tests
+        run: npx vitest run --reporter dot
+
+  postgres_verify:
+    name: Verify Postgres migration SQL
+    runs-on: ubuntu-latest
+    needs: [test]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: bayanet_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for Postgres
+        run: |
+          for i in `seq 1 30`; do
+            pg_isready -h localhost -p 5432 && break || sleep 1
+          done
+      - name: Apply migration SQL
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d bayanet_ci -f prisma/migrations/20260103_init/migration.sql
+          psql -h localhost -U postgres -d bayanet_ci -c "\dt"
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [postgres_verify]
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js
@@ -19,12 +68,58 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build --if-present
-      - name: Run tests
-        run: npm test || true
-      - name: Run Snyk scan
-        if: env.SNYK_TOKEN
+
+  snyk_scan:
+    name: Optional Snyk Scan
+    runs-on: ubuntu-latest
+    needs: [build]
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    if: ${{ env.SNYK_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Snyk
         uses: snyk/actions/node@master
         with:
           args: test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  generate_migrations:
+    name: Generate Prisma migrations (create-only)
+    runs-on: ubuntu-latest
+    needs: [postgres_verify]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: bayanet_migrate
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm ci
+      - name: Set DATABASE_URL
+        run: echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bayanet_migrate" >> $GITHUB_ENV
+      - name: Run prisma migrate create-only
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bayanet_migrate
+        run: |
+          npx prisma migrate dev --create-only --name ci-generated || true
+      - name: Upload migrations artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prisma-migrations-ci
+          path: prisma/migrations/**
