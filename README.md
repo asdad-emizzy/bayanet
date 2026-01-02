@@ -1,5 +1,7 @@
 # Bayanet — Next.js Starter
 
+> Note: The repository history on `origin/main` was recently rewritten to remove accidentally committed large files. See `CONTRIBUTING.md` for recovery steps if you have an older clone.
+
 This workspace contains a minimal Next.js + TypeScript starter with Tailwind CSS, ESLint and Prettier configured.
 
 Quick start
