@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process'
 import fs from 'node:fs'
 import prisma from '../lib/prisma'
 
-const DB_PATH = 'prisma/dev.db'
+const DB_PATHS = ['prisma/dev.db', 'prisma/prisma/dev.db']
 
 /**
  * Ensure a clean sqlite dev DB for tests. This function is resilient to
@@ -17,7 +17,8 @@ export async function resetTestDb(deleteOrder: string[] = ['order', 'voucher', '
   let lastError: unknown = null
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH)
+      // remove any existing DB files (helper reduces cognitive complexity)
+      removeExistingDbFiles()
       execSync('npx prisma db push', { stdio: 'ignore' })
       await prisma.$connect()
 
@@ -44,3 +45,16 @@ export async function resetTestDb(deleteOrder: string[] = ['order', 'voucher', '
 }
 
 export default resetTestDb
+
+function removeExistingDbFiles() {
+  for (const p of DB_PATHS) {
+    if (fs.existsSync(p)) {
+      try {
+        fs.unlinkSync(p)
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn('failed to unlink', p, String(err))
+      }
+    }
+  }
+}
