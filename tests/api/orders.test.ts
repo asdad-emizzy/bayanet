@@ -3,17 +3,10 @@ import { createRequest, createResponse } from 'node-mocks-http'
 import prisma from '../../lib/prisma'
 import handler from '../../pages/api/orders'
 
-import { execSync } from 'child_process'
-import fs from 'fs'
+import resetTestDb from '../test-utils'
 
 beforeAll(async () => {
-  try {
-    if (fs.existsSync('prisma/dev.db')) fs.unlinkSync('prisma/dev.db')
-  } catch (e) {}
-  execSync('npx prisma db push', { stdio: 'ignore' })
-  await prisma.$connect()
-  await prisma.order.deleteMany()
-  await prisma.user.deleteMany()
+  await resetTestDb(['order', 'user'])
 })
 
 afterAll(async () => {
@@ -39,6 +32,34 @@ describe('orders API', () => {
     const raw = res._getData()
     const json = typeof raw === 'string' && raw.length ? JSON.parse(raw) : raw
     expect(json.userId).toBe(user.id)
+  })
+
+  it('POST invalid order returns 422', async () => {
+    const req = createRequest({ method: 'POST', body: { userId: '', total: -5 } })
+    const res = createResponse()
+    await handler(req as any, res as any)
+    expect(res.statusCode).toBe(422)
+    const raw = res._getData()
+    const json = typeof raw === 'string' && raw.length ? JSON.parse(raw) : raw
+    expect(json.error).toBe('validation_error')
+  })
+
+  it('unsupported method returns 405', async () => {
+    const req = createRequest({ method: 'PATCH' })
+    const res = createResponse()
+    await handler(req as any, res as any)
+    expect(res.statusCode).toBe(405)
+  })
+
+  it('creating order with missing user returns 404 user_not_found', async () => {
+    // use a random userId that does not exist
+    const req = createRequest({ method: 'POST', body: { userId: 'nonexistent', total: 10 } })
+    const res = createResponse()
+    await handler(req as any, res as any)
+    expect(res.statusCode).toBe(404)
+    const raw = res._getData()
+    const json = typeof raw === 'string' && raw.length ? JSON.parse(raw) : raw
+    expect(json.error).toBe('user_not_found')
   })
 
 })

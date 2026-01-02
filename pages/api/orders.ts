@@ -11,6 +11,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   if (req.method === 'POST') {
     const parsed = createOrderSchema.parse(req.body)
+    // Ensure referenced user exists to avoid foreign-key (P2003) errors
+    const user = await prisma.user.findUnique({ where: { id: parsed.userId } })
+    if (!user) {
+      return res.status(404).json({ error: 'user_not_found' })
+    }
+
     try {
       const o = await prisma.order.create({ data: parsed })
       return res.status(201).json(o)
