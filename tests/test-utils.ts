@@ -17,16 +17,31 @@ export async function resetTestDb(deleteOrder: string[] = ['order', 'voucher', '
   let lastError: unknown = null
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
+      // Ensure prisma is disconnected before we replace the DB file
+      try {
+        await prisma.$disconnect()
+      } catch (err) {
+        // Not fatal; log for visibility
+        // eslint-disable-next-line no-console
+        console.debug('prisma disconnect during resetTestDb:', String(err))
+      }
       // remove any existing DB files (helper reduces cognitive complexity)
       removeExistingDbFiles()
       execSync('npx prisma db push', { stdio: 'ignore' })
       await prisma.$connect()
 
-      // Delete models in requested order to avoid FK constraint errors
+      // Delete models in requested order to avoid FK constraint errors. Be resilient
+      // to missing tables by catching errors per model.
       for (const model of deleteOrder) {
-        if (model === 'order') await prisma.order.deleteMany()
-        else if (model === 'voucher') await prisma.voucher.deleteMany()
-        else if (model === 'user') await prisma.user.deleteMany()
+        try {
+          if (model === 'order') await prisma.order.deleteMany()
+          else if (model === 'voucher') await prisma.voucher.deleteMany()
+          else if (model === 'user') await prisma.user.deleteMany()
+        } catch (err) {
+          // If the table doesn't exist yet, ignore and continue
+          // eslint-disable-next-line no-console
+          console.debug('deleteMany failed for', model, String(err))
+        }
       }
 
       return
