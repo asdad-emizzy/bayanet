@@ -3,7 +3,17 @@ import { createRequest, createResponse } from 'node-mocks-http'
 import prisma from '../../lib/prisma'
 import handler from '../../pages/api/users'
 
+import { execSync } from 'child_process'
+import fs from 'fs'
+
 beforeAll(async () => {
+  // Reset local sqlite DB to avoid locking/foreign-key residue from previous runs
+  try {
+    if (fs.existsSync('prisma/dev.db')) fs.unlinkSync('prisma/dev.db')
+  } catch (e) {
+    // ignore
+  }
+  execSync('npx prisma db push', { stdio: 'ignore' })
   await prisma.$connect()
   // Ensure DB is clean: delete orders before users to avoid FK constraints
   await prisma.order.deleteMany()

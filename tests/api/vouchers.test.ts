@@ -3,7 +3,14 @@ import { createRequest, createResponse } from 'node-mocks-http'
 import prisma from '../../lib/prisma'
 import handler from '../../pages/api/vouchers'
 
+import { execSync } from 'child_process'
+import fs from 'fs'
+
 beforeAll(async () => {
+  try {
+    if (fs.existsSync('prisma/dev.db')) fs.unlinkSync('prisma/dev.db')
+  } catch (e) {}
+  execSync('npx prisma db push', { stdio: 'ignore' })
   await prisma.$connect()
   await prisma.order.deleteMany()
   await prisma.voucher.deleteMany()
