@@ -17,6 +17,7 @@ model User {
   // Add fields for roles, metadata, and soft-delete pattern
   role      String   @default("user")
   isActive  Boolean  @default(true)
+  orders    Order[]
 }
 
 model Voucher {
@@ -30,6 +31,7 @@ model Voucher {
 model Order {
   id        String   @id @default(cuid())
   userId    String
+  user      User     @relation(fields: [userId], references: [id])
   total     Int
   status    String   @default("pending")
   createdAt DateTime @default(now())
