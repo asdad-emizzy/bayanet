@@ -4,6 +4,7 @@ import prisma from '../../lib/prisma'
 import handler from '../../pages/api/orders'
 
 beforeAll(async () => {
+  await prisma.$connect()
   await prisma.order.deleteMany()
   await prisma.user.deleteMany()
 })
