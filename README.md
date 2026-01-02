@@ -69,38 +69,46 @@ Architecture
 High-level architecture for the Bayanet MVP (pilot). See `docs/architecture.md` for full details.
 
 ```mermaid
-flowchart TD
+flowchart LR
+   %% Linear ordering left-to-right
    A[Mobile Web / PWA / Mobile Browser]
    B[Next.js (Vercel) - Frontend]
    C[Next.js API Routes (Serverless)]
+
+   %% Platform services (grouped but positioned after API)
    D[(Postgres - Managed DB)]
    E[(Redis - Rate limiting & sessions)]
    F[(Object Store - S3) for UGC]
    G[Auth Service (OTP provider / Twilio)]
    H[Voucher Provider API]
    I[GCash / Payments Gateway (partner)]
+
    J[Analytics / Events]
    K[Analytics Store (BigQuery / Supabase / Warehouse)]
    L[Monitoring (Sentry/Datadog)]
+
    M[Admin UI / Ops Dashboard]
    N[Manual Review Queue]
+
    O[LGU Systems / Facebook Pages / SMS Gateways]
    P[Brand Systems]
 
-   %% Connections
-   A -->|HTTP| B
-   A -->|HTTP| C
-   C --> D
-   C --> E
-   C --> F
-   C --> G
-   C --> H
-   C --> I
+   %% Primary linear connections
+   A -->|HTTP| B --> C
+
+   %% Platform services fed by API
+   C --> D & C --> E & C --> F & C --> G & C --> H & C --> I
+
+   %% Analytics comes after platform events
    C --> J
    J --> K
    J --> L
+
+   %% Ops follows analytics; admin interacts with API
+   J --> M --> N
    M -->|Admin API| C
-   N -->|review| M
+
+   %% External integrations
    O -->|Integration| C
    P -->|Integration| C
 ```
