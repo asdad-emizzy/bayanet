@@ -69,39 +69,23 @@ Architecture
 High-level architecture for the Bayanet MVP (pilot). See `docs/architecture.md` for full details.
 
 ```mermaid
-flowchart LR
-   %% Swimlane-style layout using subgraphs as lanes
-   subgraph Client [Client]
-      direction TB
-      A[Mobile Web / PWA / Mobile Browser]
-   end
-
-   subgraph Platform [Platform]
-      direction TB
-      B[Next.js (Vercel) - Frontend]
-      C[Next.js API Routes (Serverless)]
-      D[(Postgres - Managed DB)]
-      E[(Redis - Rate limiting & sessions)]
-      F[(Object Store - S3) for UGC]
-      G[Auth Service (OTP provider / Twilio)]
-      H[Voucher Provider API]
-      I[GCash / Payments Gateway (partner)]
-      J[Analytics / Events]
-      K[Analytics Store (BigQuery / Supabase / Warehouse)]
-      L[Monitoring (Sentry/Datadog)]
-   end
-
-   subgraph Ops [Ops]
-      direction TB
-      M[Admin UI / Ops Dashboard]
-      N[Manual Review Queue]
-   end
-
-   subgraph External [External]
-      direction TB
-      O[LGU Systems / Facebook Pages / SMS Gateways]
-      P[Brand Systems]
-   end
+flowchart TD
+   A[Mobile Web / PWA / Mobile Browser]
+   B[Next.js (Vercel) - Frontend]
+   C[Next.js API Routes (Serverless)]
+   D[(Postgres - Managed DB)]
+   E[(Redis - Rate limiting & sessions)]
+   F[(Object Store - S3) for UGC]
+   G[Auth Service (OTP provider / Twilio)]
+   H[Voucher Provider API]
+   I[GCash / Payments Gateway (partner)]
+   J[Analytics / Events]
+   K[Analytics Store (BigQuery / Supabase / Warehouse)]
+   L[Monitoring (Sentry/Datadog)]
+   M[Admin UI / Ops Dashboard]
+   N[Manual Review Queue]
+   O[LGU Systems / Facebook Pages / SMS Gateways]
+   P[Brand Systems]
 
    %% Connections
    A -->|HTTP| B
