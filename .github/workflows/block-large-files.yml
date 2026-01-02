@@ -1,0 +1,38 @@
+name: Block large files
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  check-large-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find large files
+        id: find
+        run: |
+          set -e
+          max=5242880 # 5MB in bytes
+          echo "Looking for files greater than $max bytes"
+          git ls-tree -r --full-tree --name-only HEAD | while read -r file; do
+            if [ -f "$file" ]; then
+              size=$(wc -c <"$file" | tr -d ' ')
+              if [ "$size" -gt "$max" ]; then
+                echo "::error file=$file::File is too large (${size} bytes > ${max} bytes)"
+                found=1
+              fi
+            fi
+          done
+          if [ "${found:-0}" -eq 1 ]; then
+            echo "Found files exceeding ${max} bytes. Failing job."
+            exit 1
+          fi
+
+      - name: Success
+        if: always()
+        run: echo "No large files found"
